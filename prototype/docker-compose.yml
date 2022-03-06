@@ -1,0 +1,40 @@
+version: '3'
+services:
+  web:
+    build:
+      context: ./nginx      # Dockerfile保存場所
+      dockerfile: dockerfile    # Dockerfileファイル名
+    container_name: nginx       # docker container name
+    ports:
+      - 80:80 # http://127.0.0.1/ にいる
+
+  app:
+    build:
+      context: ./node      # Dockerfile保存場所
+      dockerfile: dockerfile    # Dockerfileファイル名
+    container_name: node         # コンテナ名
+    tty: true
+    ports:                          # ポート接続
+      - 3000:3000
+    volumes:                        # mount workdir
+      - ./node/src:/src
+    # command: [sh, -c, cd app && npm install && npm start]
+    # npm install --production ## 本番環境
+
+  mongo:
+    build:
+      context: ./mongo
+      dockerfile: dockerfile
+    container_name: mongo
+    restart: always
+    ports:
+      - "27018:27017"
+    volumes:
+      - ./mongo/db:/data/db
+      - ./mongo/configdb:/data/configdb
+      - ./mongo/init:/docker-entrypoint-initdb.d
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: pass01
+      MONGO_INITDB_DATABASE: bookmark_db
+      TZ: Asia/Tokyo
